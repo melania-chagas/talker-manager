@@ -22,6 +22,26 @@ router.get('/talker', async (req, res) => {
   return res.status(HTTP_OK_STATUS).json(palestrantesCadastrados);
 });
 
+router.get('/talker/search', async (req, res) => {
+  const { authorization } = req.headers;
+  if (!authorization) {
+    return res.status(401).send({ message: 'Token não encontrado' }); 
+  }
+  if (authorization.length !== 16) { 
+    return res.status(401).send({ message: 'Token inválido' });
+  }
+  const pathPalestrantesCadastrados = path.resolve(__dirname, PATH);
+  const palestrantesCadastrados = JSON.parse(await fs
+    .readFile(pathPalestrantesCadastrados, 'utf-8'));
+  const { q } = req.query;
+  if (!q) {
+    return res.status(200).json(palestrantesCadastrados);
+  }
+  const pesquisados = palestrantesCadastrados.filter((palestrante) => palestrante.name
+    .includes(q));
+  return res.status(200).json(pesquisados);
+});
+
 router.get('/talker/:id', async (req, res) => {
   const pathPalestrantesCadastrados = path.resolve(__dirname, PATH);
   const palestrantesCadastrados = JSON.parse(await fs
